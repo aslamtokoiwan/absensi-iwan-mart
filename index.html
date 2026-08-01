@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1"
+>
+
+<title>Absensi IWAN MART</title>
+
+<style>
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f4f7;
+  margin: 0;
+  padding: 20px;
+}
+
+.box {
+  max-width: 430px;
+  margin: auto;
+  background: white;
+  padding: 25px;
+  border-radius: 18px;
+  box-shadow: 0 3px 15px rgba(0,0,0,0.12);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+button {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px;
+  margin-top: 15px;
+  border-radius: 9px;
+  border: none;
+  font-size: 16px;
+  background: #1a73e8;
+  color: white;
+  font-weight: bold;
+}
+
+button:disabled {
+  background: #999;
+}
+
+video {
+  width: 100%;
+  margin-top: 15px;
+  border-radius: 12px;
+  background: black;
+  display: block;
+}
+
+canvas {
+  display: none;
+}
+
+.status {
+  margin-top: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>ABSENSI IWAN MART</h2>
+
+<label>Foto Selfie</label>
+
+<video
+  id="video"
+  autoplay
+  playsinline
+  muted
+></video>
+
+<button
+  type="button"
+  id="btnKamera"
+  onclick="bukaKamera()"
+>
+📷 BUKA KAMERA
+</button>
+
+<button
+  type="button"
+  id="btnSelfie"
+  onclick="ambilFoto()"
+  disabled
+>
+🤳 AMBIL SELFIE
+</button>
+
+<canvas id="canvas"></canvas>
+
+<div
+  id="statusFoto"
+  class="status"
+>
+Kamera belum dibuka
+</div>
+
+</div>
+
+
+<script>
+
+var stream = null;
+
+var fotoBase64 = "";
+
+
+function bukaKamera() {
+
+  var video =
+    document.getElementById("video");
+
+  var btnSelfie =
+    document.getElementById("btnSelfie");
+
+  var status =
+    document.getElementById("statusFoto");
+
+
+  status.innerHTML =
+    "⏳ Membuka kamera...";
+
+
+  if (
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getUserMedia
+  ) {
+
+    status.innerHTML =
+      "❌ Browser tidak mendukung kamera.";
+
+    status.style.color = "red";
+
+    return;
+  }
+
+
+  navigator.mediaDevices.getUserMedia({
+
+    video: {
+      facingMode: {
+        ideal: "user"
+      }
+    },
+
+    audio: false
+
+  })
+
+  .then(function(mediaStream) {
+
+    stream =
+      mediaStream;
+
+    video.srcObject =
+      mediaStream;
+
+    video.play();
+
+
+    btnSelfie.disabled =
+      false;
+
+
+    status.innerHTML =
+      "✅ Kamera aktif. Arahkan wajah ke kamera.";
+
+    status.style.color =
+      "green";
+
+  })
+
+  .catch(function(error) {
+
+    console.error(error);
+
+
+    status.innerHTML =
+      "❌ Kamera gagal: " +
+      error.name;
+
+    status.style.color =
+      "red";
+
+  });
+
+}
+
+
+function ambilFoto() {
+
+  if (!stream) {
+
+    alert(
+      "Silakan buka kamera terlebih dahulu."
+    );
+
+    return;
+  }
+
+
+  var video =
+    document.getElementById("video");
+
+  var canvas =
+    document.getElementById("canvas");
+
+
+  if (
+    video.videoWidth === 0 ||
+    video.videoHeight === 0
+  ) {
+
+    alert(
+      "Kamera belum siap."
+    );
+
+    return;
+  }
+
+
+  canvas.width =
+    video.videoWidth;
+
+  canvas.height =
+    video.videoHeight;
+
+
+  var context =
+    canvas.getContext("2d");
+
+
+  context.drawImage(
+
+    video,
+
+    0,
+    0,
+
+    canvas.width,
+    canvas.height
+
+  );
+
+
+  fotoBase64 =
+    canvas.toDataURL(
+      "image/jpeg",
+      0.85
+    );
+
+
+  document.getElementById(
+    "statusFoto"
+  ).innerHTML =
+
+    "✅ SELFIE BERHASIL DIAMBIL";
+
+
+  document.getElementById(
+    "statusFoto"
+  ).style.color =
+
+    "green";
+
+
+  if (stream) {
+
+    stream
+      .getTracks()
+      .forEach(function(track) {
+
+        track.stop();
+
+      });
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>
