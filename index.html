@@ -903,14 +903,16 @@ function prosesAbsen(jenis) {
   var nik =
     document.getElementById("nik")
       .value
-      .trim();
-
+      .trim()
+      .toUpperCase();
 
   var status =
     document.getElementById("statusAbsen");
 
 
-  /* CEK NIK */
+  /* =========================
+     CEK NIK
+  ========================= */
 
   if (
     nik === "" ||
@@ -926,7 +928,9 @@ function prosesAbsen(jenis) {
   }
 
 
-  /* CEK FOTO */
+  /* =========================
+     CEK FOTO
+  ========================= */
 
   if (fotoBase64 === "") {
 
@@ -939,7 +943,9 @@ function prosesAbsen(jenis) {
   }
 
 
-  /* CEK GPS */
+  /* =========================
+     CEK GPS
+  ========================= */
 
   if (
     latitude === "" ||
@@ -955,90 +961,206 @@ function prosesAbsen(jenis) {
   }
 
 
-  /* WAKTU */
+  /* =========================
+     CEK AKURASI GPS
+  ========================= */
 
-  var sekarang =
-    new Date();
+  if (akurasi === "") {
 
+    alert(
+      "Silakan ambil lokasi GPS terlebih dahulu."
+    );
 
-  var tanggal =
-    String(
-      sekarang.getDate()
-    ).padStart(2, "0")
-    + "-"
-    + String(
-      sekarang.getMonth() + 1
-    ).padStart(2, "0")
-    + "-"
-    + sekarang.getFullYear();
+    return;
+
+  }
 
 
-  var jam =
-    String(
-      sekarang.getHours()
-    ).padStart(2, "0")
-    + ":"
-    + String(
-      sekarang.getMinutes()
-    ).padStart(2, "0")
-    + ":"
-    + String(
-      sekarang.getSeconds()
-    ).padStart(2, "0");
-
-
-  /* TAMPILKAN HASIL */
+  /* =========================
+     TAMPILKAN PROSES
+  ========================= */
 
   status.innerHTML =
-    "✅ ABSEN "
-    + jenis
-    + " BERHASIL<br><br>"
-    + "NIK: "
-    + nik
-    + "<br>"
-    + "Nama: "
-    + namaKaryawan
-    + "<br>"
-    + "Tanggal: "
-    + tanggal
-    + "<br>"
-    + "Jam: "
-    + jam
-    + "<br>"
-    + "GPS: "
-    + latitude
-    + ", "
-    + longitude;
-
+    "⏳ Mengirim absensi ke server...";
 
   status.style.color =
-    "green";
+    "orange";
 
 
-  /*
-    DATA INI NANTI AKAN
-    DIKIRIM KE GOOGLE SHEETS.
-  */
+  /* =========================
+     DATA YANG DIKIRIM
+  ========================= */
 
-  console.log({
+  var data =
+    new URLSearchParams();
 
-    nik: nik,
 
-    nama: namaKaryawan,
+  data.append(
+    "api",
+    "simpanAbsensi"
+  );
 
-    jenis: jenis,
+  data.append(
+    "nik",
+    nik
+  );
 
-    tanggal: tanggal,
+  data.append(
+    "nama",
+    namaKaryawan
+  );
 
-    jam: jam,
+  data.append(
+    "jenis",
+    jenis
+  );
 
-    latitude: latitude,
+  data.append(
+    "tanggal",
+    new Date().toLocaleDateString("id-ID")
+  );
 
-    longitude: longitude,
+  data.append(
+    "jam",
+    new Date().toLocaleTimeString("id-ID")
+  );
 
-    akurasi: akurasi,
+  data.append(
+    "latitude",
+    latitude
+  );
 
-    foto: fotoBase64
+  data.append(
+    "longitude",
+    longitude
+  );
+
+  data.append(
+    "akurasi",
+    akurasi
+  );
+
+  data.append(
+    "toko",
+    tokoKaryawan
+  );
+
+  data.append(
+    "foto",
+    fotoBase64
+  );
+
+
+  /* =========================
+     KIRIM KE GOOGLE APPS SCRIPT
+  ========================= */
+
+  fetch(
+    API_URL,
+    {
+      method: "POST",
+
+      body: data
+    }
+  )
+
+  .then(function(response) {
+
+    if (!response.ok) {
+
+      throw new Error(
+        "Server tidak merespons."
+      );
+
+    }
+
+    return response.json();
+
+  })
+
+  .then(function(result) {
+
+    console.log(
+      "HASIL SIMPAN ABSENSI:",
+      result
+    );
+
+
+    if (
+      result.berhasil === true
+    ) {
+
+      status.innerHTML =
+        "✅ ABSEN "
+        + jenis
+        + " BERHASIL DISIMPAN"
+        + "<br><br>"
+        + "NIK: "
+        + nik
+        + "<br>"
+        + "Nama: "
+        + namaKaryawan
+        + "<br>"
+        + "Toko: "
+        + tokoKaryawan;
+
+      status.style.color =
+        "green";
+
+
+      alert(
+        "Absensi "
+        + jenis
+        + " berhasil disimpan."
+      );
+
+    }
+
+    else {
+
+      status.innerHTML =
+        "❌ ABSENSI GAGAL DISIMPAN"
+        + "<br>"
+        + (
+          result.pesan ||
+          "Terjadi kesalahan."
+        );
+
+      status.style.color =
+        "red";
+
+
+      alert(
+        "Absensi gagal disimpan:\n"
+        + (
+          result.pesan ||
+          "Terjadi kesalahan."
+        )
+      );
+
+    }
+
+  })
+
+  .catch(function(error) {
+
+    console.error(
+      "ERROR SIMPAN ABSENSI:",
+      error
+    );
+
+
+    status.innerHTML =
+      "❌ Gagal mengirim absensi ke server.";
+
+    status.style.color =
+      "red";
+
+
+    alert(
+      "Gagal mengirim absensi ke Google Sheets.\n\n"
+      + error.message
+    );
 
   });
 
