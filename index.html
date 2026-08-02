@@ -40,6 +40,21 @@ label {
   font-weight: bold;
 }
 
+input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px;
+  margin-top: 7px;
+  border: 1px solid #ccc;
+  border-radius: 9px;
+  font-size: 16px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #1a73e8;
+}
+
 button {
   width: 100%;
   box-sizing: border-box;
@@ -55,6 +70,14 @@ button {
 
 button:disabled {
   background: #999;
+}
+
+.btn-masuk {
+  background: #188038;
+}
+
+.btn-pulang {
+  background: #d93025;
 }
 
 video {
@@ -75,6 +98,20 @@ canvas {
   font-weight: bold;
 }
 
+.info {
+  background: #f1f3f4;
+  padding: 12px;
+  margin-top: 15px;
+  border-radius: 10px;
+  line-height: 1.7;
+}
+
+.garis {
+  border: 0;
+  border-top: 1px solid #ddd;
+  margin: 25px 0;
+}
+
 </style>
 
 </head>
@@ -85,7 +122,110 @@ canvas {
 
 <h2>ABSENSI IWAN MART</h2>
 
-<label>Foto Selfie</label>
+
+<!-- DATA KARYAWAN -->
+
+<label for="nik">
+NIK Karyawan
+</label>
+
+<input
+  type="text"
+  id="nik"
+  placeholder="Masukkan NIK"
+  inputmode="numeric"
+  autocomplete="off"
+  oninput="cariKaryawan()"
+>
+
+
+<div
+  id="statusNIK"
+  class="status"
+>
+Silakan masukkan NIK
+</div>
+
+
+<div
+  id="dataKaryawan"
+  class="info"
+  style="display:none;"
+>
+
+<b>Nama:</b>
+<span id="namaKaryawan">-</span>
+
+<br>
+
+<b>NIK:</b>
+<span id="nikTampil">-</span>
+
+</div>
+
+
+<!-- WAKTU -->
+
+<div
+  id="waktu"
+  class="info"
+>
+Tanggal & Jam: -
+</div>
+
+
+<!-- GPS -->
+
+<hr class="garis">
+
+<label>
+Lokasi GPS
+</label>
+
+<button
+  type="button"
+  onclick="ambilLokasi()"
+>
+📍 AMBIL LOKASI
+</button>
+
+<div
+  id="statusGPS"
+  class="status"
+>
+Lokasi belum diambil
+</div>
+
+
+<div
+  id="lokasiTampil"
+  class="info"
+  style="display:none;"
+>
+
+<b>Latitude:</b>
+<span id="latitude">-</span>
+
+<br>
+
+<b>Longitude:</b>
+<span id="longitude">-</span>
+
+<br>
+
+<b>Akurasi:</b>
+<span id="akurasi">-</span> meter
+
+</div>
+
+
+<!-- KAMERA -->
+
+<hr class="garis">
+
+<label>
+Foto Selfie
+</label>
 
 <video
   id="video"
@@ -94,6 +234,7 @@ canvas {
   muted
 ></video>
 
+
 <button
   type="button"
   id="btnKamera"
@@ -101,6 +242,7 @@ canvas {
 >
 📷 BUKA KAMERA
 </button>
+
 
 <button
   type="button"
@@ -111,7 +253,9 @@ canvas {
 🤳 AMBIL SELFIE
 </button>
 
+
 <canvas id="canvas"></canvas>
+
 
 <div
   id="statusFoto"
@@ -120,15 +264,300 @@ canvas {
 Kamera belum dibuka
 </div>
 
+
+<!-- ABSENSI -->
+
+<hr class="garis">
+
+<button
+  type="button"
+  class="btn-masuk"
+  onclick="prosesAbsen('MASUK')"
+>
+🟢 ABSEN MASUK
+</button>
+
+
+<button
+  type="button"
+  class="btn-pulang"
+  onclick="prosesAbsen('PULANG')"
+>
+🔴 ABSEN PULANG
+</button>
+
+
+<div
+  id="statusAbsen"
+  class="status"
+>
+Belum melakukan absensi
+</div>
+
 </div>
 
 
 <script>
 
+
+/* ================================
+   DATA KARYAWAN
+================================ */
+
+
+/*
+  UNTUK SEMENTARA CONTOH DATA.
+
+  NANTI BAGIAN INI KITA GANTI
+  DENGAN DATA KARYAWAN IWAN MART.
+*/
+
+var daftarKaryawan = {
+
+  "001": "Budi",
+
+  "002": "Andi",
+
+  "003": "Rudi"
+
+};
+
+
+/* ================================
+   VARIABEL
+================================ */
+
 var stream = null;
 
 var fotoBase64 = "";
 
+var latitude = "";
+
+var longitude = "";
+
+var akurasi = "";
+
+var namaKaryawan = "";
+
+
+/* ================================
+   JAM REAL TIME
+================================ */
+
+function tampilkanWaktu() {
+
+  var sekarang = new Date();
+
+  var tanggal =
+    String(sekarang.getDate()).padStart(2, "0")
+    + "-"
+    + String(sekarang.getMonth() + 1).padStart(2, "0")
+    + "-"
+    + sekarang.getFullYear();
+
+  var jam =
+    String(sekarang.getHours()).padStart(2, "0")
+    + ":"
+    + String(sekarang.getMinutes()).padStart(2, "0")
+    + ":"
+    + String(sekarang.getSeconds()).padStart(2, "0");
+
+  document.getElementById("waktu").innerHTML =
+    "Tanggal & Jam: <b>"
+    + tanggal
+    + " "
+    + jam
+    + "</b>";
+
+}
+
+setInterval(tampilkanWaktu, 1000);
+
+tampilkanWaktu();
+
+
+/* ================================
+   CARI KARYAWAN BERDASARKAN NIK
+================================ */
+
+function cariKaryawan() {
+
+  var nik =
+    document.getElementById("nik").value.trim();
+
+  var status =
+    document.getElementById("statusNIK");
+
+  var data =
+    document.getElementById("dataKaryawan");
+
+
+  if (nik === "") {
+
+    namaKaryawan = "";
+
+    data.style.display = "none";
+
+    status.innerHTML =
+      "Silakan masukkan NIK";
+
+    status.style.color = "black";
+
+    return;
+
+  }
+
+
+  if (daftarKaryawan[nik]) {
+
+    namaKaryawan =
+      daftarKaryawan[nik];
+
+    document.getElementById(
+      "namaKaryawan"
+    ).innerText =
+      namaKaryawan;
+
+    document.getElementById(
+      "nikTampil"
+    ).innerText =
+      nik;
+
+    data.style.display =
+      "block";
+
+    status.innerHTML =
+      "✅ NIK ditemukan";
+
+    status.style.color =
+      "green";
+
+  } else {
+
+    namaKaryawan = "";
+
+    data.style.display =
+      "none";
+
+    status.innerHTML =
+      "❌ NIK tidak ditemukan";
+
+    status.style.color =
+      "red";
+
+  }
+
+}
+
+
+/* ================================
+   GPS
+================================ */
+
+function ambilLokasi() {
+
+  var status =
+    document.getElementById("statusGPS");
+
+
+  if (!navigator.geolocation) {
+
+    status.innerHTML =
+      "❌ HP tidak mendukung GPS.";
+
+    status.style.color =
+      "red";
+
+    return;
+
+  }
+
+
+  status.innerHTML =
+    "⏳ Mengambil lokasi...";
+
+  status.style.color =
+    "orange";
+
+
+  navigator.geolocation.getCurrentPosition(
+
+    function(position) {
+
+      latitude =
+        position.coords.latitude;
+
+      longitude =
+        position.coords.longitude;
+
+      akurasi =
+        Math.round(
+          position.coords.accuracy
+        );
+
+
+      document.getElementById(
+        "latitude"
+      ).innerText =
+        latitude;
+
+      document.getElementById(
+        "longitude"
+      ).innerText =
+        longitude;
+
+      document.getElementById(
+        "akurasi"
+      ).innerText =
+        akurasi;
+
+
+      document.getElementById(
+        "lokasiTampil"
+      ).style.display =
+        "block";
+
+
+      status.innerHTML =
+        "✅ Lokasi berhasil diambil";
+
+      status.style.color =
+        "green";
+
+    },
+
+
+    function(error) {
+
+      console.error(error);
+
+
+      status.innerHTML =
+        "❌ Gagal mengambil lokasi. Izinkan GPS pada browser.";
+
+      status.style.color =
+        "red";
+
+    },
+
+
+    {
+      enableHighAccuracy: true,
+
+      timeout: 15000,
+
+      maximumAge: 0
+
+    }
+
+  );
+
+}
+
+
+/* ================================
+   BUKA KAMERA
+================================ */
 
 function bukaKamera() {
 
@@ -146,6 +575,10 @@ function bukaKamera() {
     "⏳ Membuka kamera...";
 
 
+  status.style.color =
+    "orange";
+
+
   if (
     !navigator.mediaDevices ||
     !navigator.mediaDevices.getUserMedia
@@ -154,18 +587,24 @@ function bukaKamera() {
     status.innerHTML =
       "❌ Browser tidak mendukung kamera.";
 
-    status.style.color = "red";
+    status.style.color =
+      "red";
 
     return;
+
   }
 
 
   navigator.mediaDevices.getUserMedia({
 
     video: {
+
       facingMode: {
+
         ideal: "user"
+
       }
+
     },
 
     audio: false
@@ -195,14 +634,15 @@ function bukaKamera() {
 
   })
 
+
   .catch(function(error) {
 
     console.error(error);
 
 
     status.innerHTML =
-      "❌ Kamera gagal: " +
-      error.name;
+      "❌ Kamera gagal: "
+      + error.name;
 
     status.style.color =
       "red";
@@ -211,6 +651,10 @@ function bukaKamera() {
 
 }
 
+
+/* ================================
+   AMBIL FOTO SELFIE
+================================ */
 
 function ambilFoto() {
 
@@ -221,6 +665,7 @@ function ambilFoto() {
     );
 
     return;
+
   }
 
 
@@ -241,6 +686,7 @@ function ambilFoto() {
     );
 
     return;
+
   }
 
 
@@ -260,9 +706,11 @@ function ambilFoto() {
     video,
 
     0,
+
     0,
 
     canvas.width,
+
     canvas.height
 
   );
@@ -270,8 +718,11 @@ function ambilFoto() {
 
   fotoBase64 =
     canvas.toDataURL(
+
       "image/jpeg",
+
       0.85
+
     );
 
 
@@ -302,6 +753,158 @@ function ambilFoto() {
   }
 
 }
+
+
+/* ================================
+   PROSES ABSEN
+================================ */
+
+function prosesAbsen(jenis) {
+
+  var nik =
+    document.getElementById("nik")
+      .value
+      .trim();
+
+
+  var status =
+    document.getElementById("statusAbsen");
+
+
+  /* CEK NIK */
+
+  if (
+    nik === "" ||
+    !namaKaryawan
+  ) {
+
+    alert(
+      "Masukkan NIK karyawan yang benar terlebih dahulu."
+    );
+
+    return;
+
+  }
+
+
+  /* CEK FOTO */
+
+  if (fotoBase64 === "") {
+
+    alert(
+      "Silakan ambil selfie terlebih dahulu."
+    );
+
+    return;
+
+  }
+
+
+  /* CEK GPS */
+
+  if (
+    latitude === "" ||
+    longitude === ""
+  ) {
+
+    alert(
+      "Silakan ambil lokasi GPS terlebih dahulu."
+    );
+
+    return;
+
+  }
+
+
+  /* WAKTU */
+
+  var sekarang =
+    new Date();
+
+
+  var tanggal =
+    String(
+      sekarang.getDate()
+    ).padStart(2, "0")
+    + "-"
+    + String(
+      sekarang.getMonth() + 1
+    ).padStart(2, "0")
+    + "-"
+    + sekarang.getFullYear();
+
+
+  var jam =
+    String(
+      sekarang.getHours()
+    ).padStart(2, "0")
+    + ":"
+    + String(
+      sekarang.getMinutes()
+    ).padStart(2, "0")
+    + ":"
+    + String(
+      sekarang.getSeconds()
+    ).padStart(2, "0");
+
+
+  /* TAMPILKAN HASIL */
+
+  status.innerHTML =
+    "✅ ABSEN "
+    + jenis
+    + " BERHASIL<br><br>"
+    + "NIK: "
+    + nik
+    + "<br>"
+    + "Nama: "
+    + namaKaryawan
+    + "<br>"
+    + "Tanggal: "
+    + tanggal
+    + "<br>"
+    + "Jam: "
+    + jam
+    + "<br>"
+    + "GPS: "
+    + latitude
+    + ", "
+    + longitude;
+
+
+  status.style.color =
+    "green";
+
+
+  /*
+    DATA INI NANTI AKAN
+    DIKIRIM KE GOOGLE SHEETS.
+  */
+
+  console.log({
+
+    nik: nik,
+
+    nama: namaKaryawan,
+
+    jenis: jenis,
+
+    tanggal: tanggal,
+
+    jam: jam,
+
+    latitude: latitude,
+
+    longitude: longitude,
+
+    akurasi: akurasi,
+
+    foto: fotoBase64
+
+  });
+
+}
+
 
 </script>
 
