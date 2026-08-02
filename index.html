@@ -162,6 +162,11 @@ Silakan masukkan NIK
 <b>NIK:</b>
 <span id="nikTampil">-</span>
 
+<br>
+
+<b>Toko:</b>
+<span id="tokoKaryawan">-</span>
+
 </div>
 
 
@@ -313,15 +318,35 @@ Belum melakukan absensi
   DENGAN DATA KARYAWAN IWAN MART.
 */
 
-var daftarKaryawan = {
+/* ================================
+   API GOOGLE APPS SCRIPT
+================================ */
 
-  "TIMPP001": "NISA",
+var API_URL =
+  "https://script.google.com/macros/s/AKfycbxyGm2k4lwgIiN7d7b9Fp99DauUtf2cgWhkdJf0qJ_Hk-LasVU3JZTx-NUCsfb3DQeX/exec";
 
-  "TIMI2001": "APRIL",
 
-  "TIMI3001": "GIFSY"
+/* ================================
+   VARIABEL
+================================ */
 
-};
+var stream = null;
+
+var fotoBase64 = "";
+
+var latitude = "";
+
+var longitude = "";
+
+var akurasi = "";
+
+var namaKaryawan = "";
+
+var tokoKaryawan = "";
+
+var nikKaryawan = "";
+
+var timerCari = null;
 
 /* ================================
    VARIABEL
@@ -380,72 +405,186 @@ tampilkanWaktu();
    CARI KARYAWAN BERDASARKAN NIK
 ================================ */
 
+/* ================================
+   CARI KARYAWAN DARI GOOGLE SHEETS
+================================ */
+
 function cariKaryawan() {
 
-  var nik =
-    document.getElementById("nik").value.trim();
+  clearTimeout(timerCari);
 
-  var status =
-    document.getElementById("statusNIK");
+  timerCari = setTimeout(function() {
 
-  var data =
-    document.getElementById("dataKaryawan");
+    var input =
+      document.getElementById("nik");
+
+    var nik =
+      input.value.trim().toUpperCase();
+
+    var status =
+      document.getElementById("statusNIK");
+
+    var data =
+      document.getElementById("dataKaryawan");
 
 
-  if (nik === "") {
+    /* NORMALISASI NIK */
 
-    namaKaryawan = "";
+    input.value = nik;
 
-    data.style.display = "none";
+
+    /* JIKA KOSONG */
+
+    if (nik === "") {
+
+      namaKaryawan = "";
+      tokoKaryawan = "";
+      nikKaryawan = "";
+
+      data.style.display = "none";
+
+      status.innerHTML =
+        "Silakan masukkan NIK";
+
+      status.style.color =
+        "black";
+
+      return;
+
+    }
+
+
+    /* TAMPILKAN PROSES */
 
     status.innerHTML =
-      "Silakan masukkan NIK";
-
-    status.style.color = "black";
-
-    return;
-
-  }
-
-
-  if (daftarKaryawan[nik]) {
-
-    namaKaryawan =
-      daftarKaryawan[nik];
-
-    document.getElementById(
-      "namaKaryawan"
-    ).innerText =
-      namaKaryawan;
-
-    document.getElementById(
-      "nikTampil"
-    ).innerText =
-      nik;
-
-    data.style.display =
-      "block";
-
-    status.innerHTML =
-      "✅ NIK ditemukan";
+      "⏳ Mencari data karyawan...";
 
     status.style.color =
-      "green";
-
-  } else {
-
-    namaKaryawan = "";
+      "orange";
 
     data.style.display =
       "none";
 
-    status.innerHTML =
-      "❌ NIK tidak ditemukan";
 
-    status.style.color =
-      "red";
+    /* PANGGIL GOOGLE APPS SCRIPT */
 
-  }
+    fetch(
+      API_URL
+      + "?api=cariKaryawan&nik="
+      + encodeURIComponent(nik)
+    )
+
+    .then(function(response) {
+
+      if (!response.ok) {
+
+        throw new Error(
+          "Server tidak merespons"
+        );
+
+      }
+
+      return response.json();
+
+    })
+
+    .then(function(result) {
+
+      console.log(
+        "Hasil API:",
+        result
+      );
+
+
+      /* JIKA KARYAWAN DITEMUKAN */
+
+      if (result.berhasil === true) {
+
+        nikKaryawan =
+          result.nik || nik;
+
+        namaKaryawan =
+          result.nama || "";
+
+        tokoKaryawan =
+          result.toko || "";
+
+
+        /* NAMA */
+
+        document.getElementById(
+          "namaKaryawan"
+        ).innerText =
+          namaKaryawan;
+
+
+        /* NIK */
+
+        document.getElementById(
+          "nikTampil"
+        ).innerText =
+          nikKaryawan;
+
+
+        /* TAMPILKAN DATA */
+
+        data.style.display =
+          "block";
+
+
+        status.innerHTML =
+          "✅ Karyawan ditemukan";
+
+        status.style.color =
+          "green";
+
+      }
+
+      else {
+
+        namaKaryawan = "";
+        tokoKaryawan = "";
+        nikKaryawan = "";
+
+        data.style.display =
+          "none";
+
+        status.innerHTML =
+          "❌ NIK tidak ditemukan";
+
+        status.style.color =
+          "red";
+
+      }
+
+    })
+
+    .catch(function(error) {
+
+      console.error(
+        "Error API:",
+        error
+      );
+
+
+      namaKaryawan = "";
+      tokoKaryawan = "";
+      nikKaryawan = "";
+
+
+      data.style.display =
+        "none";
+
+
+      status.innerHTML =
+        "❌ Gagal menghubungi database";
+
+      status.style.color =
+        "red";
+
+    });
+
+  }, 400);
 
 }
 
