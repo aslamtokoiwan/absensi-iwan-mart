@@ -1,1173 +1,230 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-
-<meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1"
->
-
-<title>Absensi IWAN MART</title>
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Absensi Iwan Mart</title>
 <style>
-
-body {
-  font-family: Arial, sans-serif;
-  background: #f2f4f7;
-  margin: 0;
-  padding: 20px;
-}
-
-.box {
-  max-width: 430px;
-  margin: auto;
-  background: white;
-  padding: 25px;
-  border-radius: 18px;
-  box-shadow: 0 3px 15px rgba(0,0,0,0.12);
-}
-
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-label {
-  display: block;
-  margin-top: 15px;
-  font-weight: bold;
-}
-
-input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 13px;
-  margin-top: 7px;
-  border: 1px solid #ccc;
-  border-radius: 9px;
-  font-size: 16px;
-}
-
-input:focus {
-  outline: none;
-  border-color: #1a73e8;
-}
-
-button {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 13px;
-  margin-top: 15px;
-  border-radius: 9px;
-  border: none;
-  font-size: 16px;
-  background: #1a73e8;
-  color: white;
-  font-weight: bold;
-}
-
-button:disabled {
-  background: #999;
-}
-
-.btn-masuk {
-  background: #188038;
-}
-
-.btn-pulang {
-  background: #d93025;
-}
-
-video {
-  width: 100%;
-  margin-top: 15px;
-  border-radius: 12px;
-  background: black;
-  display: block;
-}
-
-canvas {
-  display: none;
-}
-
-.status {
-  margin-top: 10px;
-  text-align: center;
-  font-weight: bold;
-}
-
-.info {
-  background: #f1f3f4;
-  padding: 12px;
-  margin-top: 15px;
-  border-radius: 10px;
-  line-height: 1.7;
-}
-
-.garis {
-  border: 0;
-  border-top: 1px solid #ddd;
-  margin: 25px 0;
-}
-
+:root{--biru:#1a73e8;--hijau:#188038;--merah:#d93025;--abu:#5f6368;--garis:#dadce0}
+*{box-sizing:border-box}
+body{margin:0;background:#f1f3f4;font-family:Roboto,Arial,sans-serif;color:#202124}
+main{max-width:480px;margin:0 auto;padding:14px}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+h1{margin:0;text-align:center;font-size:21px}
+#jam{text-align:center;font-size:34px;font-weight:700;margin-top:6px}
+#tgl{text-align:center;color:var(--abu);font-size:14px}
+.judul{font-weight:700;margin-bottom:8px}
+.no{display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%;background:var(--biru);color:#fff;font-size:14px;margin-right:6px}
+input[type=text]{width:100%;font-size:22px;padding:12px;border:1px solid var(--garis);border-radius:10px;text-transform:uppercase;letter-spacing:1px}
+.info{margin-top:10px;font-size:16px;min-height:22px}
+.info b{font-size:19px}
+.ok{color:var(--hijau)}.err{color:var(--merah)}.abu{color:var(--abu)}
+button{width:100%;border:0;border-radius:12px;padding:15px;font-size:17px;font-weight:700;color:#fff;background:var(--biru);cursor:pointer}
+button.kecil{background:#e8eaed;color:#202124;font-size:14px;padding:10px;margin-top:8px}
+button.hijau{background:var(--hijau)}button.merah{background:var(--merah)}
+button:disabled{background:#bdc1c6;color:#fff;cursor:not-allowed}
+#preview{display:none;width:100%;max-height:260px;object-fit:cover;border-radius:12px;margin-top:10px}
+#hasil{display:none;text-align:center}
+#hasil .besar{font-size:54px}
+#hasil .nama{font-size:20px;font-weight:700}
 </style>
-
 </head>
-
 <body>
+<main>
+  <div class="card">
+    <h1>ABSENSI IWAN MART</h1>
+    <div id="jam">--:--:--</div>
+    <div id="tgl"></div>
+  </div>
 
-<div class="box">
+  <div id="form">
+    <div class="card">
+      <div class="judul"><span class="no">1</span>NIK Karyawan</div>
+      <input id="nik" type="text" placeholder="Contoh: TIMPP001" autocomplete="off" autocapitalize="characters">
+      <div id="info" class="info abu">Masukkan NIK Anda</div>
+    </div>
 
-<h2>ABSENSI IWAN MART</h2>
+    <div class="card">
+      <div class="judul"><span class="no">2</span>Lokasi</div>
+      <div id="lokasi" class="info abu">Mengambil lokasi...</div>
+      <button class="kecil" id="btnLokasi" type="button">Ambil ulang lokasi</button>
+    </div>
 
+    <div class="card">
+      <div class="judul"><span class="no">3</span>Foto Selfie</div>
+      <input id="file" type="file" accept="image/*" capture="user" hidden>
+      <button id="btnSelfie" type="button">AMBIL SELFIE</button>
+      <img id="preview" alt="Foto selfie">
+    </div>
 
-<!-- DATA KARYAWAN -->
+    <div class="card">
+      <button id="btnAksi" type="button" disabled>ABSEN</button>
+      <div id="pesan" class="info"></div>
+    </div>
+  </div>
 
-<label for="nik">
-NIK Karyawan
-</label>
-
-<input
-  type="text"
-  id="nik"
-  placeholder="Contoh: TIMPP001"
-  autocomplete="off"
-  autocapitalize="characters"
-  spellcheck="false"
-  oninput="cariKaryawan()"
->
-
-
-<div
-  id="statusNIK"
-  class="status"
->
-Silakan masukkan NIK
-</div>
-
-
-<div
-  id="dataKaryawan"
-  class="info"
-  style="display:none;"
->
-
-<b>Nama:</b>
-<span id="namaKaryawan">-</span>
-
-<br>
-
-<b>NIK:</b>
-<span id="nikTampil">-</span>
-
-<br>
-
-<b>Toko:</b>
-<span id="tokoKaryawan">-</span>
-
-</div>
-
-
-<!-- WAKTU -->
-
-<div
-  id="waktu"
-  class="info"
->
-Tanggal & Jam: -
-</div>
-
-
-<!-- GPS -->
-
-<hr class="garis">
-
-<label>
-Lokasi GPS
-</label>
-
-<button
-  type="button"
-  onclick="ambilLokasi()"
->
-📍 AMBIL LOKASI
-</button>
-
-<div
-  id="statusGPS"
-  class="status"
->
-Lokasi belum diambil
-</div>
-
-
-<div
-  id="lokasiTampil"
-  class="info"
-  style="display:none;"
->
-
-<b>Latitude:</b>
-<span id="latitude">-</span>
-
-<br>
-
-<b>Longitude:</b>
-<span id="longitude">-</span>
-
-<br>
-
-<b>Akurasi:</b>
-<span id="akurasi">-</span> meter
-
-</div>
-
-
-<!-- KAMERA -->
-
-<hr class="garis">
-
-<label>
-Foto Selfie
-</label>
-
-<video
-  id="video"
-  autoplay
-  playsinline
-  muted
-></video>
-
-
-<button
-  type="button"
-  id="btnKamera"
-  onclick="bukaKamera()"
->
-📷 BUKA KAMERA
-</button>
-
-
-<button
-  type="button"
-  id="btnSelfie"
-  onclick="ambilFoto()"
-  disabled
->
-🤳 AMBIL SELFIE
-</button>
-
-
-<canvas id="canvas"></canvas>
-
-
-<div
-  id="statusFoto"
-  class="status"
->
-Kamera belum dibuka
-</div>
-
-
-<!-- ABSENSI -->
-
-<hr class="garis">
-
-<button
-  type="button"
-  class="btn-masuk"
-  onclick="prosesAbsen('MASUK')"
->
-🟢 ABSEN MASUK
-</button>
-
-
-<button
-  type="button"
-  class="btn-pulang"
-  onclick="prosesAbsen('PULANG')"
->
-🔴 ABSEN PULANG
-</button>
-
-
-<div
-  id="statusAbsen"
-  class="status"
->
-Belum melakukan absensi
-</div>
-
-</div>
-
+  <div id="hasil" class="card">
+    <div class="besar">&#10004;&#65039;</div>
+    <div class="nama" id="hNama"></div>
+    <div id="hAksi" class="info"></div>
+    <div id="hKet" class="info abu"></div>
+    <button id="btnSelesai" type="button" class="hijau" style="margin-top:12px">SELESAI</button>
+  </div>
+</main>
 
 <script>
+var API_URL = 'https://script.google.com/macros/s/AKfycbzH1EqhF32fvPE5e5awqsYoa0BhB3SJcA6LoEGWNHR5cWcpxBO0EIU1sb3YPr3LYiA/exec';   // URL dari Apps Script (Deploy > Web app), berakhiran /exec
 
+var S = { kar: null, lok: null, foto: null, jarak: null, cid: null, sibuk: false, cariKe: 0 };
+var $ = function (id) { return document.getElementById(id); };
 
-/* ================================
-   DATA KARYAWAN
-================================ */
-
-
-/*
-  UNTUK SEMENTARA CONTOH DATA.
-
-  NANTI BAGIAN INI KITA GANTI
-  DENGAN DATA KARYAWAN IWAN MART.
-*/
-
-/* ================================
-   API GOOGLE APPS SCRIPT
-================================ */
-
-var API_URL =
-  "https://script.google.com/macros/s/AKfycbwjwQRTPrGf5QGOW1cc-jZOnxCo1psQxKUDxyB_2Fhv8Hr2Py3avAj1mwxcQqgP0mkg/exec";
-
-
-/* ================================
-   VARIABEL
-================================ */
-
-var stream = null;
-
-var fotoBase64 = "";
-
-var latitude = "";
-
-var longitude = "";
-
-var akurasi = "";
-
-var namaKaryawan = "";
-
-var tokoKaryawan = "";
-
-var nikKaryawan = "";
-
-var timerCari = null;
-
-/* ================================
-   VARIABEL
-================================ */
-
-var stream = null;
-
-var fotoBase64 = "";
-
-var latitude = "";
-
-var longitude = "";
-
-var akurasi = "";
-
-var namaKaryawan = "";
-
-
-/* ================================
-   JAM REAL TIME
-================================ */
-
-function tampilkanWaktu() {
-
-  var sekarang = new Date();
-
-  var tanggal =
-    String(sekarang.getDate()).padStart(2, "0")
-    + "-"
-    + String(sekarang.getMonth() + 1).padStart(2, "0")
-    + "-"
-    + sekarang.getFullYear();
-
-  var jam =
-    String(sekarang.getHours()).padStart(2, "0")
-    + ":"
-    + String(sekarang.getMinutes()).padStart(2, "0")
-    + ":"
-    + String(sekarang.getSeconds()).padStart(2, "0");
-
-  document.getElementById("waktu").innerHTML =
-    "Tanggal & Jam: <b>"
-    + tanggal
-    + " "
-    + jam
-    + "</b>";
-
+/* ---------- jam ---------- */
+function tick() {
+  var d = new Date();
+  $('jam').textContent = d.toLocaleTimeString('id-ID', { hour12: false }).replace(/\./g, ':');
+  $('tgl').textContent = d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
+setInterval(tick, 1000); tick();
 
-setInterval(tampilkanWaktu, 1000);
+/* ---------- util ---------- */
+function jarak(lat1, lng1, lat2, lng2) {
+  var R = 6371000, r = Math.PI / 180, dLa = (lat2 - lat1) * r, dLo = (lng2 - lng1) * r;
+  var a = Math.sin(dLa / 2) * Math.sin(dLa / 2) + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+function setHtml(id, teks, kelas) { var e = $(id); e.textContent = teks; e.className = 'info ' + (kelas || 'abu'); }
 
-tampilkanWaktu();
-
-
-/* ================================
-   CARI KARYAWAN BERDASARKAN NIK
-================================ */
-
-/* ================================
-   CARI KARYAWAN DARI GOOGLE SHEETS
-================================ */
-
-function cariKaryawan() {
-
-  clearTimeout(timerCari);
-
-  timerCari = setTimeout(function() {
-
-    var input =
-      document.getElementById("nik");
-
-    var nik =
-      input.value.trim().toUpperCase();
-
-    var status =
-      document.getElementById("statusNIK");
-
-    var data =
-      document.getElementById("dataKaryawan");
-
-
-    /* NORMALISASI NIK */
-
-    input.value = nik;
-
-
-    /* JIKA KOSONG */
-
-    if (nik === "") {
-
-      namaKaryawan = "";
-      tokoKaryawan = "";
-      nikKaryawan = "";
-
-      data.style.display = "none";
-
-      status.innerHTML =
-        "Silakan masukkan NIK";
-
-      status.style.color =
-        "black";
-
-      return;
-
+/* ---------- 1. NIK ---------- */
+var tunda = null;
+$('nik').addEventListener('input', function () {
+  this.value = this.value.toUpperCase().replace(/\s/g, '');
+  clearTimeout(tunda); tunda = setTimeout(cari, 500);
+});
+async function cari() {
+  var nik = $('nik').value.trim(), token = ++S.cariKe;
+  S.kar = null; segarkan();
+  if (nik.length < 4) { setHtml('info', 'Masukkan NIK Anda'); return; }
+  setHtml('info', 'Mencari...');
+  try {
+    var res = await fetch(API_URL + '?api=cari&nik=' + encodeURIComponent(nik));
+    var r = await res.json();
+    if (token !== S.cariKe) return;
+    if (!r.ok) { setHtml('info', r.pesan, 'err'); return; }
+    S.kar = r; localStorage.setItem('nik', nik);
+    var e = $('info'); e.className = 'info';
+    e.innerHTML = '';
+    var b = document.createElement('b'); b.textContent = r.nama; e.appendChild(b);
+    e.appendChild(document.createElement('br'));
+    e.appendChild(document.createTextNode(r.toko + ' \u2022 ' + r.shift));
+    if (r.terakhir) {
+      e.appendChild(document.createElement('br'));
+      var t = document.createElement('span'); t.className = 'abu';
+      t.textContent = 'Terakhir: ' + r.terakhir.jenis + ' ' + r.terakhir.jam.substr(0, 5) + ' (' + r.terakhir.tgl + ')';
+      e.appendChild(t);
     }
-
-
-    /* TAMPILKAN PROSES */
-
-    status.innerHTML =
-      "⏳ Mencari data karyawan...";
-
-    status.style.color =
-      "orange";
-
-    data.style.display =
-      "none";
-
-
-    /* PANGGIL GOOGLE APPS SCRIPT */
-
-    fetch(
-      API_URL
-      + "?api=cariKaryawan&nik="
-      + encodeURIComponent(nik)
-    )
-
-    .then(function(response) {
-
-      if (!response.ok) {
-
-        throw new Error(
-          "Server tidak merespons"
-        );
-
-      }
-
-      return response.json();
-
-    })
-
-    .then(function(result) {
-
-      console.log(
-        "Hasil API:",
-        result
-      );
-
-
-      /* JIKA KARYAWAN DITEMUKAN */
-
-      if (result.berhasil === true) {
-
-        nikKaryawan =
-          result.nik || nik;
-
-        namaKaryawan =
-          result.nama || "";
-
-        tokoKaryawan =
-          result.toko || "";
-
-
-        /* NAMA */
-
-        document.getElementById(
-          "namaKaryawan"
-        ).innerText =
-          namaKaryawan;
-
-
-        /* NIK */
-
-        document.getElementById(
-          "nikTampil"
-        ).innerText =
-          nikKaryawan;
-
-
-        /* TAMPILKAN DATA */
-
-        data.style.display =
-          "block";
-
-
-        status.innerHTML =
-          "✅ Karyawan ditemukan";
-
-        status.style.color =
-          "green";
-
-      }
-
-      else {
-
-        namaKaryawan = "";
-        tokoKaryawan = "";
-        nikKaryawan = "";
-
-        data.style.display =
-          "none";
-
-        status.innerHTML =
-          "❌ NIK tidak ditemukan";
-
-        status.style.color =
-          "red";
-
-      }
-
-    })
-
-    .catch(function(error) {
-
-      console.error(
-        "Error API:",
-        error
-      );
-
-
-      namaKaryawan = "";
-      tokoKaryawan = "";
-      nikKaryawan = "";
-
-
-      data.style.display =
-        "none";
-
-
-      status.innerHTML =
-        "❌ Gagal menghubungi database";
-
-      status.style.color =
-        "red";
-
-    });
-
-  }, 400);
-
+    segarkan();
+  } catch (err) {
+    if (token === S.cariKe) setHtml('info', 'Gagal terhubung. Periksa internet Anda.', 'err');
+  }
 }
 
-
-/* ================================
-   GPS
-================================ */
-
+/* ---------- 2. Lokasi ---------- */
 function ambilLokasi() {
-
-  var status =
-    document.getElementById("statusGPS");
-
-
-  if (!navigator.geolocation) {
-
-    status.innerHTML =
-      "❌ HP tidak mendukung GPS.";
-
-    status.style.color =
-      "red";
-
-    return;
-
-  }
-
-
-  status.innerHTML =
-    "⏳ Mengambil lokasi...";
-
-  status.style.color =
-    "orange";
-
-
-  navigator.geolocation.getCurrentPosition(
-
-    function(position) {
-
-      latitude =
-        position.coords.latitude;
-
-      longitude =
-        position.coords.longitude;
-
-      akurasi =
-        Math.round(
-          position.coords.accuracy
-        );
-
-
-      document.getElementById(
-        "latitude"
-      ).innerText =
-        latitude;
-
-      document.getElementById(
-        "longitude"
-      ).innerText =
-        longitude;
-
-      document.getElementById(
-        "akurasi"
-      ).innerText =
-        akurasi;
-
-
-      document.getElementById(
-        "lokasiTampil"
-      ).style.display =
-        "block";
-
-
-      status.innerHTML =
-        "✅ Lokasi berhasil diambil";
-
-      status.style.color =
-        "green";
-
-    },
-
-
-    function(error) {
-
-      console.error(error);
-
-
-      status.innerHTML =
-        "❌ Gagal mengambil lokasi. Izinkan GPS pada browser.";
-
-      status.style.color =
-        "red";
-
-    },
-
-
-    {
-      enableHighAccuracy: true,
-
-      timeout: 15000,
-
-      maximumAge: 0
-
-    }
-
-  );
-
+  S.lok = null; S.jarak = null; setHtml('lokasi', 'Mengambil lokasi...'); segarkan();
+  if (!navigator.geolocation) { setHtml('lokasi', 'Perangkat tidak mendukung GPS', 'err'); return; }
+  navigator.geolocation.getCurrentPosition(function (p) {
+    S.lok = { lat: p.coords.latitude, lng: p.coords.longitude, akurasi: p.coords.accuracy };
+    segarkan();
+  }, function (e) {
+    setHtml('lokasi', e.code === 1 ? 'Izin lokasi ditolak. Aktifkan izin lokasi untuk situs ini.' : 'Lokasi gagal diambil. Coba lagi di tempat terbuka.', 'err');
+  }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
 }
+$('btnLokasi').addEventListener('click', ambilLokasi);
 
-
-/* ================================
-   BUKA KAMERA
-================================ */
-
-function bukaKamera() {
-
-  var video =
-    document.getElementById("video");
-
-  var btnSelfie =
-    document.getElementById("btnSelfie");
-
-  var status =
-    document.getElementById("statusFoto");
-
-
-  status.innerHTML =
-    "⏳ Membuka kamera...";
-
-
-  status.style.color =
-    "orange";
-
-
-  if (
-    !navigator.mediaDevices ||
-    !navigator.mediaDevices.getUserMedia
-  ) {
-
-    status.innerHTML =
-      "❌ Browser tidak mendukung kamera.";
-
-    status.style.color =
-      "red";
-
-    return;
-
-  }
-
-
-  navigator.mediaDevices.getUserMedia({
-
-    video: {
-
-      facingMode: {
-
-        ideal: "user"
-
-      }
-
-    },
-
-    audio: false
-
-  })
-
-  .then(function(mediaStream) {
-
-    stream =
-      mediaStream;
-
-    video.srcObject =
-      mediaStream;
-
-    video.play();
-
-
-    btnSelfie.disabled =
-      false;
-
-
-    status.innerHTML =
-      "✅ Kamera aktif. Arahkan wajah ke kamera.";
-
-    status.style.color =
-      "green";
-
-  })
-
-
-  .catch(function(error) {
-
-    console.error(error);
-
-
-    status.innerHTML =
-      "❌ Kamera gagal: "
-      + error.name;
-
-    status.style.color =
-      "red";
-
+/* ---------- 3. Selfie ---------- */
+$('btnSelfie').addEventListener('click', function () { $('file').click(); });
+$('file').addEventListener('change', async function () {
+  var f = this.files && this.files[0]; if (!f) return;
+  try {
+    S.foto = await prosesFoto(f, $('nik').value.trim());
+    $('preview').src = S.foto; $('preview').style.display = 'block';
+    $('btnSelfie').textContent = 'AMBIL ULANG SELFIE';
+  } catch (e) { S.foto = null; setHtml('pesan', 'Foto gagal diproses. Coba lagi.', 'err'); }
+  this.value = ''; segarkan();
+});
+function prosesFoto(file, nik) {
+  return new Promise(function (ok, gagal) {
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onload = function () {
+      var k = Math.min(1, 640 / Math.max(img.width, img.height));
+      var c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      var x = c.getContext('2d'); x.drawImage(img, 0, 0, c.width, c.height);
+      x.fillStyle = 'rgba(0,0,0,.55)'; x.fillRect(0, c.height - 26, c.width, 26);
+      x.fillStyle = '#fff'; x.font = '14px Arial';
+      x.fillText(nik + '   ' + new Date().toLocaleString('id-ID'), 8, c.height - 8);
+      URL.revokeObjectURL(url); ok(c.toDataURL('image/jpeg', 0.6));
+    };
+    img.onerror = function () { gagal(new Error('foto')); };
+    img.src = url;
   });
-
 }
 
-
-/* ================================
-   AMBIL FOTO SELFIE
-================================ */
-
-function ambilFoto() {
-
-  if (!stream) {
-
-    alert(
-      "Silakan buka kamera terlebih dahulu."
-    );
-
-    return;
-
+/* ---------- status tombol ---------- */
+function segarkan() {
+  var k = S.kar, tombol = $('btnAksi'), lokOk = false;
+  if (S.lok) {
+    if (k && k.lokasiToko) {
+      S.jarak = jarak(S.lok.lat, S.lok.lng, k.lokasiToko.lat, k.lokasiToko.lng);
+      lokOk = S.jarak <= k.lokasiToko.radius;
+      setHtml('lokasi', lokOk ? 'Di area toko (' + Math.round(S.jarak) + ' m)' : 'Terlalu jauh dari toko: ' + Math.round(S.jarak) + ' m (batas ' + k.lokasiToko.radius + ' m)', lokOk ? 'ok' : 'err');
+    } else {
+      lokOk = !k;   // belum ada NIK: tunggu
+      setHtml('lokasi', 'Lokasi didapat (akurasi \u00b1' + Math.round(S.lok.akurasi) + ' m)', 'ok');
+      if (k && !k.lokasiToko) setHtml('lokasi', 'Koordinat toko belum diatur. Hubungi pemilik.', 'err');
+    }
   }
-
-
-  var video =
-    document.getElementById("video");
-
-  var canvas =
-    document.getElementById("canvas");
-
-
-  if (
-    video.videoWidth === 0 ||
-    video.videoHeight === 0
-  ) {
-
-    alert(
-      "Kamera belum siap."
-    );
-
-    return;
-
-  }
-
-
-  canvas.width =
-    video.videoWidth;
-
-  canvas.height =
-    video.videoHeight;
-
-
-  var context =
-    canvas.getContext("2d");
-
-
-  context.drawImage(
-
-    video,
-
-    0,
-
-    0,
-
-    canvas.width,
-
-    canvas.height
-
-  );
-
-
-  fotoBase64 =
-    canvas.toDataURL(
-
-      "image/jpeg",
-
-      0.85
-
-    );
-
-
-  document.getElementById(
-    "statusFoto"
-  ).innerHTML =
-
-    "✅ SELFIE BERHASIL DIAMBIL";
-
-
-  document.getElementById(
-    "statusFoto"
-  ).style.color =
-
-    "green";
-
-
-  if (stream) {
-
-    stream
-      .getTracks()
-      .forEach(function(track) {
-
-        track.stop();
-
-      });
-
-  }
-
+  var siap = !!(k && S.lok && S.foto && lokOk && !S.sibuk);
+  tombol.disabled = !siap;
+  tombol.textContent = S.sibuk ? 'Mengirim...' : (k ? 'ABSEN ' + k.aksi : 'ABSEN');
+  tombol.className = k ? (k.aksi === 'MASUK' ? 'hijau' : 'merah') : '';
 }
 
-
-/* ================================
-   PROSES ABSEN
-================================ */
-
-function prosesAbsen(jenis) {
-
-  var nik =
-    document.getElementById("nik")
-      .value
-      .trim()
-      .toUpperCase();
-
-  var status =
-    document.getElementById("statusAbsen");
-
-
-  /* =========================
-     CEK NIK
-  ========================= */
-
-  if (
-    nik === "" ||
-    !namaKaryawan
-  ) {
-
-    alert(
-      "Masukkan NIK karyawan yang benar terlebih dahulu."
-    );
-
-    return;
-
+/* ---------- kirim ---------- */
+$('btnAksi').addEventListener('click', async function () {
+  if (!S.kar || S.sibuk) return;
+  S.sibuk = true; setHtml('pesan', ''); segarkan();
+  if (!S.cid) S.cid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random();
+  try {
+    var res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ api: 'simpan', cid: S.cid, nik: S.kar.nik, aksi: S.kar.aksi,
+        lat: S.lok.lat, lng: S.lok.lng, akurasi: S.lok.akurasi, foto: S.foto })
+    });
+    var r = await res.json();
+    S.sibuk = false;
+    if (!r.ok) { S.cid = null; setHtml('pesan', r.pesan, 'err'); segarkan(); return; }
+    S.cid = null;
+    $('hNama').textContent = r.nama;
+    $('hAksi').textContent = 'ABSEN ' + r.aksi + ' pukul ' + r.jam.substr(0, 5);
+    $('hAksi').className = 'info ok';
+    $('hKet').textContent = r.keterangan || '';
+    $('form').style.display = 'none'; $('hasil').style.display = 'block';
+  } catch (err) {
+    S.sibuk = false;   // cid dipertahankan: jika terkirim ulang tidak akan tercatat ganda
+    setHtml('pesan', 'Koneksi terputus. Tekan tombol lagi untuk mengirim ulang.', 'err'); segarkan();
   }
-
-
-  /* =========================
-     CEK FOTO
-  ========================= */
-
-  if (fotoBase64 === "") {
-
-    alert(
-      "Silakan ambil selfie terlebih dahulu."
-    );
-
-    return;
-
-  }
-
-
-  /* =========================
-     CEK GPS
-  ========================= */
-
-  if (
-    latitude === "" ||
-    longitude === ""
-  ) {
-
-    alert(
-      "Silakan ambil lokasi GPS terlebih dahulu."
-    );
-
-    return;
-
-  }
-
-
-  /* =========================
-     CEK AKURASI GPS
-  ========================= */
-
-  if (akurasi === "") {
-
-    alert(
-      "Silakan ambil lokasi GPS terlebih dahulu."
-    );
-
-    return;
-
-  }
-
-
-  /* =========================
-     TAMPILKAN PROSES
-  ========================= */
-
-  status.innerHTML =
-    "⏳ Mengirim absensi ke server...";
-
-  status.style.color =
-    "orange";
-
-
-  /* =========================
-     DATA YANG DIKIRIM
-  ========================= */
-
-  var data =
-    new URLSearchParams();
-
-
-  data.append(
-    "api",
-    "simpanAbsensi"
-  );
-
-  data.append(
-    "nik",
-    nik
-  );
-
-  data.append(
-    "nama",
-    namaKaryawan
-  );
-
-  data.append(
-    "jenis",
-    jenis
-  );
-
-  data.append(
-    "tanggal",
-    new Date().toLocaleDateString("id-ID")
-  );
-
-  data.append(
-    "jam",
-    new Date().toLocaleTimeString("id-ID")
-  );
-
-  data.append(
-    "latitude",
-    latitude
-  );
-
-  data.append(
-    "longitude",
-    longitude
-  );
-
-  data.append(
-    "akurasi",
-    akurasi
-  );
-
-  data.append(
-    "toko",
-    tokoKaryawan
-  );
-
-  data.append(
-    "foto",
-    fotoBase64
-  );
-
-
-  /* =========================
-     KIRIM KE GOOGLE APPS SCRIPT
-  ========================= */
-
-  fetch(
-    API_URL,
-    {
-      method: "POST",
-
-      body: data
-    }
-  )
-
-  .then(function(response) {
-
-    if (!response.ok) {
-
-      throw new Error(
-        "Server tidak merespons."
-      );
-
-    }
-
-    return response.json();
-
-  })
-
-  .then(function(result) {
-
-    console.log(
-      "HASIL SIMPAN ABSENSI:",
-      result
-    );
-
-
-    if (
-      result.berhasil === true
-    ) {
-
-      status.innerHTML =
-        "✅ ABSEN "
-        + jenis
-        + " BERHASIL DISIMPAN"
-        + "<br><br>"
-        + "NIK: "
-        + nik
-        + "<br>"
-        + "Nama: "
-        + namaKaryawan
-        + "<br>"
-        + "Toko: "
-        + tokoKaryawan;
-
-      status.style.color =
-        "green";
-
-
-      alert(
-        "Absensi "
-        + jenis
-        + " berhasil disimpan."
-      );
-
-    }
-
-    else {
-
-      status.innerHTML =
-        "❌ ABSENSI GAGAL DISIMPAN"
-        + "<br>"
-        + (
-          result.pesan ||
-          "Terjadi kesalahan."
-        );
-
-      status.style.color =
-        "red";
-
-
-      alert(
-        "Absensi gagal disimpan:\n"
-        + (
-          result.pesan ||
-          "Terjadi kesalahan."
-        )
-      );
-
-    }
-
-  })
-
-  .catch(function(error) {
-
-    console.error(
-      "ERROR SIMPAN ABSENSI:",
-      error
-    );
-
-
-    status.innerHTML =
-      "❌ Gagal mengirim absensi ke server.";
-
-    status.style.color =
-      "red";
-
-
-    alert(
-      "Gagal mengirim absensi ke Google Sheets.\n\n"
-      + error.message
-    );
-
-  });
-
-}
-
-
+});
+$('btnSelesai').addEventListener('click', function () {
+  S.foto = null; $('preview').style.display = 'none'; $('btnSelfie').textContent = 'AMBIL SELFIE';
+  $('hasil').style.display = 'none'; $('form').style.display = 'block';
+  setHtml('pesan', ''); cari(); ambilLokasi();
+});
+
+/* ---------- mulai ---------- */
+var nikTersimpan = localStorage.getItem('nik');
+if (nikTersimpan) { $('nik').value = nikTersimpan; cari(); }
+ambilLokasi();
 </script>
-
 </body>
 </html>
